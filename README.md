@@ -1,1 +1,1 @@
-Hello!
+Backend part of the university project
