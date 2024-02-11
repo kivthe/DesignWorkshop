@@ -1,1 +1,1 @@
-Backend part of the university project.
+University Project. Backend part.
