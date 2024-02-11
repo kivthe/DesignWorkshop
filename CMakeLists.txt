@@ -4,7 +4,7 @@
 
 # Compile On Windows
 # cmake CMakeLists.txt -G "MinGW Makefiles" -B build -S %cd%
-# mingw32-make -C build
+# mingw32-make -C build -j4
 
 
 cmake_minimum_required(VERSION 3.22)
