@@ -1,3 +1,0 @@
-C:/Users/igork/Development/UniversityProject/build/CMakeFiles/DesignWorkshop-1.0.0.0.dir
-C:/Users/igork/Development/UniversityProject/build/CMakeFiles/edit_cache.dir
-C:/Users/igork/Development/UniversityProject/build/CMakeFiles/rebuild_cache.dir
