@@ -7,12 +7,12 @@
 
 ## Сборка
 * На Linux:
-	# cmake CMakeLists.txt -B build -S ${PWD}
-	make -C build -j4
+1. cmake CMakeLists.txt -B build -S ${PWD}
+2. make -C build -j4
 
 * На Windows:
-	# cmake CMakeLists.txt -G "MinGW Makefiles" -B build -S %cd%
-	mingw32-make -C build -j4
+1. cmake CMakeLists.txt -G "MinGW Makefiles" -B build -S %cd%
+2. mingw32-make -C build -j4
 ## Авторы
 - Кузнецов Игорь Вячеславович (igor.kuznetsov2019@gmail.com, [Telegram](https://t.me/kivthe))
 ## Лицензия
