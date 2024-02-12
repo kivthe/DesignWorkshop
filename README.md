@@ -18,4 +18,4 @@
 ## Лицензия
 Пока что лицензия отсутствует.
 ## Используемые внешние библиотеки
-Пока что не используется ни одной внешней библиотеки.
+- [spdlog](https://github.com/gabime/spdlog.git) под [MIT](https://github.com/gabime/spdlog/blob/v2.x/LICENSE) лизензией.
