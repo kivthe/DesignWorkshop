@@ -1,11 +1,14 @@
-# Desgin Workshop - Проектный практикум
+# Design Workshop - Проектный практикум
 
 Это Backend - часть совместного проекта команды студентов номер 69 из группы БПИ2303 университета МТУСИ.
 
 ## Стадия разработки
 На данный момент проект находится в начальной стадии разработки.
-
+## Требования к проекту
+Требования к проекту находятся в файле REQUIREMENTS.md, но файл представляет собой неполный список.
 ## Сборка
+> Для сборки требуется CMake версии 3.21 или новее.
+
 * На Linux:
 1. cmake CMakeLists.txt -B build -S ${PWD}
 2. make -C build -j4
@@ -18,4 +21,4 @@
 ## Лицензия
 Пока что лицензия отсутствует.
 ## Используемые внешние библиотеки
-- [spdlog](https://github.com/gabime/spdlog.git) под [MIT](https://github.com/gabime/spdlog/blob/v2.x/LICENSE) лизензией.
+- [spdlog](https://github.com/gabime/spdlog.git) под [MIT](https://github.com/gabime/spdlog/blob/v2.x/LICENSE) лицензией.

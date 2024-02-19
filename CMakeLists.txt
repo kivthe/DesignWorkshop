@@ -7,7 +7,7 @@
 # mingw32-make -C build -j4
 
 
-cmake_minimum_required(VERSION 3.22)
+cmake_minimum_required(VERSION 3.21)
 project(DesignWorkshop LANGUAGES CXX VERSION 1.0.0.0)
 set(output_name "${PROJECT_NAME}-${PROJECT_VERSION}")
 
