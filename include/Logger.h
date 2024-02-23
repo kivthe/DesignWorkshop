@@ -7,33 +7,40 @@
 namespace dw {
 
 enum class LogLevel : int {
-  TRACE,
-  DEBUG,
-  INFO,
-  WARN,
-  ERROR,
-  CRITICAL,
-  LEVEL_OFF,
-  COUNT
+  Trace,
+  Debug,
+  Info,
+  Warn,
+  Error,
+  Critical,
+  Count
 };
 
 class Logger {
-public:
-  class Impl;
-
 public:
   Logger(const std::string& name);
   Logger(const Logger&);
   Logger(Logger&&) noexcept;
   Logger& operator=(const Logger&);
   Logger& operator=(Logger&&) noexcept;
-  ~Logger();
 
 public:
-  template<typename... T>
-  void Log(const std::string& format, T&&... args);
+  void SetLogLevel(LogLevel level);
+  void Log(const std::string& message);
+  void Log(const std::string& message, LogLevel level);
+  template<typename... Args>
+  void Log(const std::string& format, Args&&... args);
+  template<typename... Args>
+  void Log(const std::string& format, LogLevel level, Args&&... args);
+  void LogToFile(const std::string& filename, const std::string& message);
+  template<typename... Args>
+  void LogToFile(const std::string& filename, const std::string& format, Args&&... args);
+  void LogToFile(const std::string& filename, const std::string& message, LogLevel level);
+  template<typename... Args>
+  void LogToFile(const std::string& filename, const std::string& format, LogLevel level, Args&&... args);
 
 private:
+  class Impl;
   std::unique_ptr<Impl> impl_;
 };
 

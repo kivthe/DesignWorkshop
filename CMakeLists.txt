@@ -28,6 +28,7 @@ set(include
 set(source
   src/Main.cpp
   src/Clock.cpp
+  src/Logger.cpp
 )
 
 set(options
@@ -38,6 +39,15 @@ set(options
     -g3
     -ggdb3
     -fmax-errors=10
+)
+
+set(release_options
+  -Wall
+  -Wextra
+  -Wpedantic
+  -std=c++17
+  -g0
+  -O3
 )
 
 add_executable(${output_name})
