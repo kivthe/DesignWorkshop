@@ -1,10 +1,10 @@
-#ifndef LOGGER_H
-#define LOGGER_H
+#ifndef DW_LOGGER_H
+#define DW_LOGGER_H
 
 #include <memory>
 #include <string>
 
-namespace up {
+namespace dw {
 
 enum class LogLevel : int {
   TRACE,

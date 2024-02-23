@@ -27,6 +27,7 @@ set(include
 
 set(source
   src/Main.cpp
+  src/Clock.cpp
 )
 
 set(options
