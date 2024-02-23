@@ -28,9 +28,24 @@ public:
     memset(bitfields_, 0, bitfields_count_);
   } 
   PoolAllocator(const PoolAllocator&) = delete;
-  PoolAllocator(PoolAllocator&&) noexcept;
+  PoolAllocator(PoolAllocator&& src) noexcept :
+    data_{std::move(src.data_)},
+    blocks_count_{std::move(src.blocks_count_)},
+    bitfields_{std::move(src.bitfields_)},
+    bitfields_count_{std::move(src.bitfields_count_)}
+  {
+    src.data_ = nullptr;
+    src.bitfields_ = nullptr;
+  }
   PoolAllocator& operator=(const PoolAllocator&) = delete;
-  PoolAllocator& operator=(PoolAllocator&&) noexcept;
+  PoolAllocator& operator=(PoolAllocator&& rhs) noexcept {
+    data_ = std::move(rhs.data_);
+    blocks_count_ = std::move(rhs.blocks_count_);
+    bitfields_ = std::move(rhs.bitfields_);
+    bitfields_count_ = std::move(rhs.bitfields_count_);
+    rhs.data_ = nullptr;
+    rhs.bitfields_ = nullptr;
+  }
   ~PoolAllocator() {
     free(bitfields_);
   }
