@@ -10,11 +10,11 @@
 > Для сборки требуется CMake версии 3.21 или новее.
 
 * На Linux:
-1. cmake CMakeLists.txt -B build -S ${PWD}
+1. cmake -DCMAKE_BUILD_TYPE=Release CMakeLists.txt -B build -S ${PWD}
 2. make -C build -j4
 
 * На Windows:
-1. cmake CMakeLists.txt -G "MinGW Makefiles" -B build -S %cd%
+1. cmake -DCMAKE_BUILD_TYPE=Release CMakeLists.txt -G "MinGW Makefiles" -B build -S %cd%
 2. mingw32-make -C build -j4
 ## Авторы
 - Кузнецов Игорь Вячеславович (igor.kuznetsov2019@gmail.com, [Telegram](https://t.me/kivthe))

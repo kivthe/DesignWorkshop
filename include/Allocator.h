@@ -21,7 +21,7 @@ public:
     size_t total_allocation = BlockSize * blocks_count + bitfields_count * sizeof(char);
     void* pointer = malloc(total_allocation);
     if (pointer == nullptr) throw std::bad_alloc{};
-    data_ = pointer + sizeof(char) * bitfields_count;
+    data_ = (char*)pointer + sizeof(char) * bitfields_count;
     blocks_count_ = blocks_count;
     bitfields_ = reinterpret_cast<char*>(pointer);
     bitfields_count_ = bitfields_count;
@@ -72,10 +72,10 @@ public:
     for (size_t i = 0; i < blocks_needed; ++i) {
       bitfields_[(index + i) / sizeof(char) / CHAR_BIT] |= 1 << (sizeof(char) * CHAR_BIT - ((index + i) % (sizeof(char) * CHAR_BIT)) - 1);
     }
-    return data_ + BlockSize * index;
+    return (char*)data_ + BlockSize * index;
   }
   void Deallocate(void* pointer, size_t size_bytes) {
-    if (pointer == nullptr || pointer < data_ || pointer > data_ + blocks_count_ * BlockSize) return;
+    if (pointer == nullptr || pointer < data_ || (char*)pointer > (char*)data_ + blocks_count_ * BlockSize) return;
     size_t blocks = size_bytes / BlockSize + (((size_bytes / BlockSize) * BlockSize) < size_bytes ? 1 : 0);
     size_t index = (reinterpret_cast<std::size_t>(pointer) - reinterpret_cast<std::size_t>(data_)) / BlockSize;
     for (size_t i = 0; i <= blocks && index + i < blocks_count_; ++i) {
