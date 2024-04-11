@@ -5,6 +5,7 @@
 
 #include <thread>
 #include <fstream>
+#include <vector>
 
 namespace dw {
 
@@ -46,22 +47,27 @@ void Server::Impl::Setup() {
 
 void Server::Impl::Start() {
   
-  server->Get(R"(\/pages\/(\d+))", [](const httplib::Request &req, httplib::Response &res) {
-    auto number = req.matches[1];
-    //res.set_content(R"()", "text/html");
-    std::string source_string;
-    if (req.matches[1] == "0")
-    {
-    std::fstream file("pages/0/index.html");
-    auto beg = file.tellg();
+  server->Get(R"(\/pages\/(\d+)\/([a-z]+\.[a-z]+))", [](const httplib::Request &req, httplib::Response &res) {
+    std::string path = "pages/";
+    path += req.matches[1];
+    path += '/';
+    path += req.matches[2];
+    std::fstream file(path);
+    if (file.fail() || !file.is_open()) {
+      //res.set_content("Failed to open the file", "text/plain");
+      res.status = 404;
+      return;
+    }
+    std::vector<char> buffer;
     file.seekg(0, std::ios::end);
     auto end = file.tellg();
+    size_t size = end;
     file.seekg(0, std::ios::beg);
-    size_t size = end - beg;
-    source_string.reserve(size);
-    file.read((char*)source_string.data(), size);
+    std::cout << size << " bytes transfered" << '\n';
+    buffer.reserve(size);
+    file.read(buffer.data(), size);
     file.close();
-    }
+    std::string source_string(buffer.data(), buffer.data() + size);
     res.set_content(source_string, "text/html");
   });
 
