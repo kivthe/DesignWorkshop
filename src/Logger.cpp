@@ -79,7 +79,6 @@ public:
   void LogToFile(const std::string& filename, std::string message, LogLevel level);
 
 public:
-  static std::string GetThreadID();
   static std::string GetTimeString();
   static std::string GetDateString();
 
@@ -140,10 +139,6 @@ void Logger::Impl::Log(std::string message) {
       case 'v':
         result.replace(index, 2, message);
         break;
-      
-      case 't':
-        result.replace(index, 2, GetThreadID());
-        break;
 
       case 'n':
         result.replace(index, 2, name);
@@ -196,10 +191,6 @@ void Logger::Impl::LogToFile(const std::string& filename, std::string message) {
       case 'v':
         result.replace(index, 2, message);
         break;
-      
-      case 't':
-        result.replace(index, 2, GetThreadID());
-        break;
 
       case 'n':
         result.replace(index, 2, name);
@@ -235,15 +226,6 @@ void Logger::Impl::LogToFile(const std::string& filename, std::string message, L
   this->level = level;
   LogToFile(filename, message);
   this->level = temp;
-}
-
-//--------------------------------------------------------------------------------
-
-std::string Logger::Impl::GetThreadID() {
-  auto id = std::this_thread::get_id();
-  std::stringstream ss;
-  ss << id;
-  return ss.str();
 }
 
 //--------------------------------------------------------------------------------

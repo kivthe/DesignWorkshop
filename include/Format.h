@@ -8,10 +8,10 @@
 namespace dw {
 
 template<char EscChar = '%', typename... Args>
-constexpr std::string Format(const std::string& format, Args&&... args)
+constexpr std::string Format(std::string format, Args&&... args)
 {
     static_assert((std::is_convertible<Args, std::string>::value && ...), "Can not convert parameter pack arguments");
-    if constexpr (sizeof...(Args) <= 0) return format;
+    if (sizeof...(Args) <= 0) return format;
     std::array<std::string, sizeof...(Args)> arr{static_cast<std::string>(std::forward<Args>(args))...};
     std::string result = format;
     for(std::size_t index = 0; index < result.size(); ++index)

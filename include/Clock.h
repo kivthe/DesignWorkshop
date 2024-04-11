@@ -2,6 +2,7 @@
 #define DW_CLOCK_H
 
 #include <chrono>
+#include <cstdint>
 
 namespace dw
 {

@@ -1,7 +1,9 @@
-#include "Logger.h"
+#include "Server.h"
 
-int main([[maybe_unused]] int argc, [[maybe_unused]] char** argv) {
-  dw::Logger core_logger("Core Logger");
+int main(int argc, char** argv) {
+  dw::Server server;
+  server.Setup();
+  server.Start();
 
   return 0;
 }

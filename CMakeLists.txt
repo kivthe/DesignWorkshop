@@ -1,15 +1,15 @@
-# Compile On UNIX
+# On UNIX
 # cmake CMakeLists.txt -B build -S ${PWD}
-# make -C build -j4
 
-# Compile On Windows
-# cmake CMakeLists.txt -G "MinGW Makefiles" -B build -S %cd%
-# mingw32-make -C build -j4
+# On Windows
+# cmake CMakeLists.txt -B build -S %cd%
 
 
 cmake_minimum_required(VERSION 3.21)
-project(DesignWorkshop LANGUAGES CXX VERSION 1.0.0.0)
-set(output_name "${PROJECT_NAME}-${PROJECT_VERSION}")
+project(server LANGUAGES CXX VERSION 1.0.0.0)
+set(output_name "${PROJECT_NAME}")
+set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED 17)
 
 set(libs
 )
@@ -29,30 +29,18 @@ set(source
   src/Main.cpp
   src/Clock.cpp
   src/Logger.cpp
-  src/DevConsole.cpp
+  src/Server.cpp
 )
 
-IF(${CMAKE_BUILD_TYPE} STREQUAL "")
-set(CMAKE_BUILD_TYPE "Release")
-ENDIF()
 IF(${CMAKE_BUILD_TYPE} STREQUAL "Release")
 set(options
-  -Wall
-  -Wextra
-  -Wpedantic
-  -std=c++17
   -O2
-  -fno-exceptions
 )
 set(build_type_defs
   NDEBUG
 )
 ELSEIF(${CMAKE_BUILD_TYPE} STREQUAL "Debug")
 set(options
-  -Wall
-  -Wextra
-  -Wpedantic
-  -std=c++17
   -O0
   -g3
   -ggdb3
@@ -64,7 +52,6 @@ set(options
   -Wall
   -Wextra
   -Wpedantic
-  -std=c++17
   -O2
   -g3
   -ggdb3
@@ -77,7 +64,6 @@ set(options
   -Wall
   -Wextra
   -Wpedantic
-  -std=c++17
   -Os
 )
 set(build_type_defs
