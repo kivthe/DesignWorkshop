@@ -1,7 +1,7 @@
 #include "Clock.h"
 #include <cstdint>
 
-namespace dw
+namespace kiv
 {
     Time Time::FromSeconds(std::int64_t seconds)
     {

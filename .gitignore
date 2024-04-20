@@ -1,4 +1,9 @@
-/build
-/vendor
 /.vscode
+/.vs
 /.obsidian
+/x64
+/Debug
+/Release
+/University Project/Debug
+/University Project/Release
+/University Project/x64

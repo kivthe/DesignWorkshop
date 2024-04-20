@@ -1,15 +1,26 @@
 #include "Server.h"
 #include "Logger.h"
-#include "PageManager.h"
 #include "httplib.h"
 
 #include <thread>
 #include <fstream>
 #include <vector>
 
-namespace dw {
+namespace kiv {
 
 //--------------------------------------------------------------------------------
+
+struct ServerConfig {
+  std::string config_file = "";
+  std::string root_directory = "";
+  std::string log_output_directory = "";
+  std::string blocked_addresses_file = "";
+  std::string requests_templates_file = "";
+  bool is_log_output_on = true;
+  int max_threads = 4;
+  int port = 8080;
+  int max_cache_items = 100;
+};
 
 class Server::Impl {
 public:
@@ -24,7 +35,7 @@ public:
 public:
   Logger server_logger;
   httplib::Server* server;
-  //PageManager* page_manager;
+  ServerConfig config;
 };
 
 //--------------------------------------------------------------------------------
@@ -63,12 +74,14 @@ void Server::Impl::Start() {
     auto end = file.tellg();
     size_t size = end;
     file.seekg(0, std::ios::beg);
-    std::cout << size << " bytes transfered" << '\n';
     buffer.reserve(size);
     file.read(buffer.data(), size);
     file.close();
     std::string source_string(buffer.data(), buffer.data() + size);
+    //==================================================
     res.set_content(source_string, "text/html");
+    //==================================================
+    std::cout << size << "bytes transfered to " << req.remote_addr << '\n';
   });
 
   server->set_error_handler([](const httplib::Request &req, httplib::Response &res) {

@@ -1,7 +1,10 @@
 #ifndef DW_SERVER_H
 #define DW_SERVER_H
 
-namespace dw {
+#include "CmdArgManager.h"
+#include <string>
+
+namespace kiv {
 
 class Server {
 public:
@@ -14,6 +17,7 @@ public:
   ~Server();
 
 public:
+  void ParseCmdArgv(CmdArgvManager* argv_man);
   void Setup();
   void Start();
   void Shutdown();

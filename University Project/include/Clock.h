@@ -4,7 +4,7 @@
 #include <chrono>
 #include <cstdint>
 
-namespace dw
+namespace kiv
 {
 
 constexpr static double kUpdateRate = 1.0 / 60.0;

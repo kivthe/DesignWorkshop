@@ -5,7 +5,7 @@
 #include <type_traits>
 #include <array>
 
-namespace dw {
+namespace kiv {
 
 template<char EscChar = '%', typename... Args>
 constexpr std::string Format(std::string format, Args&&... args)

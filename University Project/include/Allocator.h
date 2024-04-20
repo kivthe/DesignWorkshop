@@ -6,7 +6,7 @@
 #include <climits>
 #include <cstring>
 
-namespace dw {
+namespace kiv {
 
 template<size_t BlockSize>
 class PoolAllocator {

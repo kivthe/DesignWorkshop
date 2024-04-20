@@ -6,7 +6,7 @@
 
 #include "Format.h"
 
-namespace dw {
+namespace kiv {
 
 enum class LogLevel : int {
   Trace,
