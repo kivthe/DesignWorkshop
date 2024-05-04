@@ -1,24 +1,16 @@
 # Design Workshop - Проектный практикум
-
-Это Backend - часть совместного проекта команды студентов номер 69 из группы БПИ2303 университета МТУСИ.
-
+Это Backend - часть совместного проекта команды студентов номер ? из группы БПИ2303 университета МТУСИ.
 ## Стадия разработки
-На данный момент проект находится в начальной стадии разработки.
+На данный момент проект находится в промежуточной стадии разработки, так как некоторые успехи были достигнуты.
 ## Требования к проекту
 Требования к проекту находятся в файле REQUIREMENTS.md, но файл представляет собой неполный список.
 ## Сборка
-> Для сборки требуется CMake версии 3.21 или новее.
-
-* На Linux:
-1. cmake -DCMAKE_BUILD_TYPE=Release CMakeLists.txt -B build -S ${PWD}
-2. make -C build -j4
-
-* На Windows:
-1. cmake -DCMAKE_BUILD_TYPE=Release CMakeLists.txt -G "MinGW Makefiles" -B build -S %cd%
-2. mingw32-make -C build -j4
+> Для сборки требуется Visual Studio 2017
 ## Авторы
 - Кузнецов Игорь Вячеславович (igor.kuznetsov2019@gmail.com, [Telegram](https://t.me/kivthe))
 ## Лицензия
 Пока что лицензия отсутствует.
 ## Используемые внешние библиотеки
-- [spdlog](https://github.com/gabime/spdlog.git) под [MIT](https://github.com/gabime/spdlog/blob/v2.x/LICENSE) лицензией.
+- httplib
+- sqlite3
+- SQLiteCpp
