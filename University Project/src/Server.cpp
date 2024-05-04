@@ -1,26 +1,13 @@
 #include "Server.h"
-#include "Logger.h"
-#include "httplib.h"
 
-#include <thread>
-#include <fstream>
-#include <vector>
+#include "httplib/httplib.h"
+
+#include "Logger.h"
+#include "DataCacheManager.h"
 
 namespace kiv {
 
-//--------------------------------------------------------------------------------
-
-struct ServerConfig {
-  std::string config_file = "";
-  std::string root_directory = "";
-  std::string log_output_directory = "";
-  std::string blocked_addresses_file = "";
-  std::string requests_templates_file = "";
-  bool is_log_output_on = true;
-  int max_threads = 4;
-  int port = 8080;
-  int max_cache_items = 100;
-};
+//================================================================================
 
 class Server::Impl {
 public:
@@ -28,60 +15,85 @@ public:
   ~Impl();
 
 public:
-  void Setup();
-  void Start();
+  void Run(const ServerSettings& settings);
   void Shutdown();
 
 public:
-  Logger server_logger;
   httplib::Server* server;
-  ServerConfig config;
+  Logger server_logger;
+  ServerSettings settings;
+  DataCacheManager cache_manager;
 };
 
-//--------------------------------------------------------------------------------
+//================================================================================
 
 Server::Impl::Impl() :
+  server{nullptr},
   server_logger("Server Logger"),
-  server{nullptr}
+  settings{}
 {}
+
+//================================================================================
 
 Server::Impl::~Impl() {
   Shutdown();
 }
 
-void Server::Impl::Setup() {
+//================================================================================
+
+void Server::Impl::Run(const ServerSettings& settings) {
   if (server != nullptr) return;
+  this->settings = settings;
   server = new httplib::Server();
   server_logger.Log("Server setup");
   server_logger.LogToFile("logs.txt", "Server setup");
-}
 
-void Server::Impl::Start() {
-  
-  server->Get(R"(\/pages\/(\d+)\/([a-z]+\.[a-z]+))", [](const httplib::Request &req, httplib::Response &res) {
+  //================================================================================
+
+  server->Get(R"(\/pages\/(\d+)\/([a-z]+\.[a-z]+))", [&](const httplib::Request &req, httplib::Response &res) {
     std::string path = "pages/";
     path += req.matches[1];
     path += '/';
     path += req.matches[2];
-    std::fstream file(path);
-    if (file.fail() || !file.is_open()) {
-      //res.set_content("Failed to open the file", "text/plain");
-      res.status = 404;
+    if (!cache_manager.CachePresentViaPath(path)) {
+      if (!cache_manager.AddCacheFromFile(path, path)) {
+        res.status = 404; // Not found
+        return;
+      }
+    }
+    auto ptr = cache_manager.GetCacheViaPath(path);
+    if (ptr == nullptr) {
+      res.status = 500; // Internal server error
       return;
     }
-    std::vector<char> buffer;
-    file.seekg(0, std::ios::end);
-    auto end = file.tellg();
-    size_t size = end;
-    file.seekg(0, std::ios::beg);
-    buffer.reserve(size);
-    file.read(buffer.data(), size);
-    file.close();
-    std::string source_string(buffer.data(), buffer.data() + size);
-    //==================================================
-    res.set_content(source_string, "text/html");
-    //==================================================
-    std::cout << size << "bytes transfered to " << req.remote_addr << '\n';
+    auto size = cache_manager.QueryCacheDataViaPath(path).size;
+    res.set_content(std::string(ptr, ptr + size), "text/html");
+    server_logger.Log(CFormat("Transfered %d bytes to remote address %s", size, req.remote_addr.c_str()));
+    server_logger.LogToFile("logs.txt", CFormat("Transfered %d bytes to remote address %s", size, req.remote_addr.c_str()));
+  });
+  
+  //================================================================================
+
+  server->Get(R"(\/pages\/(\d+)\/?)", [&](const httplib::Request &req, httplib::Response &res) {
+    std::string path = "pages/";
+    path += req.matches[1];
+    path += '/';
+    path += "index.html";
+    if (!cache_manager.CachePresentViaPath(path)) {
+      if (!cache_manager.AddCacheFromFile(path, path)) {
+        res.status = 404; // Not found
+        return;
+      }
+    }
+    auto ptr = cache_manager.GetCacheViaPath(path);
+    if (ptr == nullptr) {
+      res.status = 500; // Internal server error
+      return;
+    }
+    auto size = cache_manager.QueryCacheDataViaPath(path).size;
+    res.set_content(std::string(ptr, ptr + size), "text/html");
+    server_logger.Log(CFormat("Transfered %d bytes to remote address %s", size, req.remote_addr.c_str()));
+    server_logger.LogToFile("logs.txt", CFormat("Transfered %d bytes to remote address %s", size, req.remote_addr.c_str()));
   });
 
   server->set_error_handler([](const httplib::Request &req, httplib::Response &res) {
@@ -89,13 +101,20 @@ void Server::Impl::Start() {
     std::snprintf(buffer, sizeof(buffer), "<p>Error Status: <span style='color:red;'>%d</span></p>", res.status);
     res.set_content(buffer, "text/html");
   });
-  
-  server->set_read_timeout(5);
-  server->set_write_timeout(5);
-  server->listen("0.0.0.0", 8080);
+
+  //================================================================================
+
+  server->set_read_timeout(3);
+  server->set_write_timeout(3);
+  std::thread listen_thread([&](httplib::Server* server, const char* ip, int port) {
+    server->listen("0.0.0.0", port);
+  }, server, "0.0.0.0", settings.http_port);
+  listen_thread.detach();
   server_logger.Log("Server started");
   server_logger.LogToFile("logs.txt", "Server started");
 }
+
+//================================================================================
 
 void Server::Impl::Shutdown() {
   if (server == nullptr) return;
@@ -105,39 +124,46 @@ void Server::Impl::Shutdown() {
   server_logger.LogToFile("logs.txt", "Server shutdown");
 }
 
-//--------------------------------------------------------------------------------
+//================================================================================
 
 Server::Server() :
   impl_(new Impl)
 {}
 
+//================================================================================
+
 Server::~Server() {
   delete impl_;
 }
+
+//================================================================================
 
 Server::Server(Server&& src) noexcept  :
   impl_(std::move(src.impl_))
 {
   src.impl_ = nullptr;
 }
+
+//================================================================================
+
 Server& Server::operator=(Server&& rhs) noexcept {
   impl_ = std::move(rhs.impl_);
   rhs.impl_ = nullptr;
   return *this;
 }
 
-void Server::Setup() {
-  impl_->Setup();
+//================================================================================
+
+void Server::Run(const ServerSettings& settings) {
+  impl_->Run(settings);
 }
 
-void Server::Start() {
-  impl_->Start();
-}
+//================================================================================
 
 void Server::Shutdown() {
   impl_->Shutdown();
 }
 
-//--------------------------------------------------------------------------------
+//================================================================================
 
 }

@@ -28,6 +28,22 @@ constexpr std::string Format(std::string format, Args&&... args)
     return result;
 }
 
+template<typename... Args>
+constexpr std::string CFormat(const std::string& c_format, Args... args) {
+  if (c_format.empty() || sizeof...(Args) == 0) return c_format;
+  int num = std::snprintf(nullptr, 0, c_format.c_str(), std::forward<Args>(args)...);
+  if (num < 0) return c_format;
+  try {
+    std::unique_ptr<char[]> buffer(new char[num + 1]);
+    int check = std::snprintf(buffer.get(), num + 1, c_format.c_str(), std::forward<Args>(args)...);
+    if (check < 0) return c_format;
+    std::string result(buffer.get(), buffer.get() + num);
+    return result;
+  } catch (std::exception& except) {
+    return c_format;
+  }
+}
+
 }
 
 #endif

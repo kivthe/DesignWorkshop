@@ -8,6 +8,8 @@
 
 namespace kiv {
 
+constexpr auto CharBits = (sizeof(char) * CHAR_BIT);
+
 template<size_t BlockSize>
 class PoolAllocator {
 public:
@@ -17,7 +19,7 @@ public:
     bitfields_{nullptr},
     bitfields_count_{0}
   {
-    size_t bitfields_count = blocks_count / (sizeof(char) * CHAR_BIT) +  (((blocks_count / sizeof(char) / CHAR_BIT) * sizeof(char) * CHAR_BIT) < blocks_count ? 1 : 0);
+    size_t bitfields_count = blocks_count / CharBits +  (((blocks_count / CharBits) * CharBits) < blocks_count ? 1 : 0);
     size_t total_allocation = BlockSize * blocks_count + bitfields_count * sizeof(char);
     void* pointer = malloc(total_allocation);
     if (pointer == nullptr) throw std::bad_alloc{};
@@ -54,10 +56,10 @@ public:
   [[nodsicard]] void* Allocate(size_t size_bytes) {
     size_t blocks_needed = size_bytes / BlockSize + (((size_bytes / BlockSize) * BlockSize) < size_bytes ? 1 : 0);
     size_t index = static_cast<size_t>(-1);
-    for (size_t i = 0; i < bitfields_count_ * sizeof(char) * CHAR_BIT; ++i) {
-      if (bitfields_[i / sizeof(char) / CHAR_BIT] & 1 << (sizeof(char) * CHAR_BIT - i % (sizeof(char) * CHAR_BIT) - 1)) continue;
-      for (size_t j = i + 1; j < bitfields_count_ * sizeof(char) * CHAR_BIT; ++j) {
-        if (bitfields_[j / sizeof(char) / CHAR_BIT] & 1 << (sizeof(char) * CHAR_BIT - j % (sizeof(char) * CHAR_BIT) - 1)) {
+    for (size_t i = 0; i < bitfields_count_ * CharBits; ++i) {
+      if (bitfields_[i / CharBits] & 1 << (CharBits - i % (CharBits) - 1)) continue;
+      for (size_t j = i + 1; j < bitfields_count_ * CharBits; ++j) {
+        if (bitfields_[j / CharBits] & 1 << (CharBits - j % (CharBits) - 1)) {
           i = j;
           break;
         }
@@ -70,7 +72,7 @@ public:
     loop_break:
     if (index == static_cast<size_t>(-1)) return nullptr;
     for (size_t i = 0; i < blocks_needed; ++i) {
-      bitfields_[(index + i) / sizeof(char) / CHAR_BIT] |= 1 << (sizeof(char) * CHAR_BIT - ((index + i) % (sizeof(char) * CHAR_BIT)) - 1);
+      bitfields_[(index + i) / CharBits] |= 1 << (CharBits - ((index + i) % (CharBits)) - 1);
     }
     return (char*)data_ + BlockSize * index;
   }
@@ -79,7 +81,7 @@ public:
     size_t blocks = size_bytes / BlockSize + (((size_bytes / BlockSize) * BlockSize) < size_bytes ? 1 : 0);
     size_t index = (reinterpret_cast<std::size_t>(pointer) - reinterpret_cast<std::size_t>(data_)) / BlockSize;
     for (size_t i = 0; i <= blocks && index + i < blocks_count_; ++i) {
-      bitfields_[(index + i) / sizeof(char) / CHAR_BIT] &= ~(1 << (sizeof(char) * CHAR_BIT - ((index + i) % (sizeof(char) * CHAR_BIT)) - 1));
+      bitfields_[(index + i) / CharBits] &= ~(1 << (CharBits - ((index + i) % CharBits) - 1));
     }
   }
   template<typename T, typename... Args>
@@ -94,7 +96,7 @@ public:
   }
   template<typename T>
   void Deallocate(T* pointer, size_t count) {
-    if (pointer == nullptr || pointer < data_ || pointer > data_ + blocks_count_ * BlockSize) return;
+    if (pointer == nullptr || pointer < data_ || pointer > (char*)data_ + blocks_count_ * BlockSize) return;
     for (size_t i = 0; i < count; ++i) {
       (pointer + i)->~T();
     }
