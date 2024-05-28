@@ -5,6 +5,16 @@
 #include "Logger.h"
 #include "DataCacheManager.h"
 
+#include <unordered_map>
+#include <filesystem>
+
+std::unordered_map<std::string, std::string> ContentLookup = 
+{
+  {"jsx",  "text/javascript"},
+  {"html", "text/html"},
+  {"css",  "text/css"}
+};
+
 namespace kiv {
 
 //================================================================================
@@ -48,13 +58,10 @@ void Server::Impl::Run(const ServerSettings& settings) {
   server_logger.Log("Server setup");
   server_logger.LogToFile("logs.txt", "Server setup");
 
-  //================================================================================
-
-  server->Get(R"(\/pages\/(\d+)\/([a-z]+\.[a-z]+))", [&](const httplib::Request &req, httplib::Response &res) {
-    std::string path = "pages/";
-    path += req.matches[1];
-    path += '/';
+  server->Get(R"(^\/(pages\/)?(\d+\/)?([a-z]+\.([a-z]+)))", [&](const httplib::Request &req, httplib::Response &res) {
+    std::string path = req.matches[1];
     path += req.matches[2];
+    path += req.matches[3];
     if (!cache_manager.CachePresentViaPath(path)) {
       if (!cache_manager.AddCacheFromFile(path, path)) {
         res.status = 404; // Not found
@@ -67,17 +74,17 @@ void Server::Impl::Run(const ServerSettings& settings) {
       return;
     }
     auto size = cache_manager.QueryCacheDataViaPath(path).size;
-    res.set_content(std::string(ptr, ptr + size), "text/html");
+    std::string content_type;
+    if (ContentLookup.count(req.matches[4]) < 1) content_type = "text/plain";
+    else content_type = ContentLookup[req.matches[4]];
+    res.set_content(std::string(ptr, ptr + size), content_type);
     server_logger.Log(CFormat("Transfered %d bytes to remote address %s", size, req.remote_addr.c_str()));
     server_logger.LogToFile("logs.txt", CFormat("Transfered %d bytes to remote address %s", size, req.remote_addr.c_str()));
   });
-  
-  //================================================================================
 
-  server->Get(R"(\/pages\/(\d+)\/?)", [&](const httplib::Request &req, httplib::Response &res) {
-    std::string path = "pages/";
-    path += req.matches[1];
-    path += '/';
+  server->Get(R"(^\/(pages\/)?(\d+\/)?)", [&](const httplib::Request &req, httplib::Response &res) {
+    std::string path = req.matches[1];
+    path += req.matches[2];
     path += "index.html";
     if (!cache_manager.CachePresentViaPath(path)) {
       if (!cache_manager.AddCacheFromFile(path, path)) {
