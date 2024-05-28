@@ -8,18 +8,22 @@
 #include <ostream>
 #include <variant>
 
+// Worharound with SQLite columns cuz I am done with this bsht
+#include "SQLiteCpp/Column.h"
+
 namespace kiv {
 
-// TODO: Inherrit from base interface
 class SQLite {
 public:
   class Impl;
 
+  /*
   struct Column {
     std::string name = "";
     std::variant<std::int64_t, double, std::string, void*> variant = (void*)0;
     std::int32_t size_bytes = 0;
   };
+  */
 
 public:
   SQLite();
@@ -47,8 +51,9 @@ public:
   bool BindQueryValue(std::int32_t index, double             value) noexcept;
   bool BindQueryValue(std::int32_t index, const std::string& value) noexcept;
   bool ClearQueryBindings() noexcept;
-  std::vector<Column> ExecuteQuerySingle() noexcept;
-  std::vector<std::vector<Column>> ExecuteQuery() noexcept;
+  std::vector<::SQLite::Column> QueryColumn(const std::string& col_name) noexcept;
+  std::vector<std::vector<::SQLite::Column>> QueryColumns(std::vector<std::string> cols_names) noexcept;
+  std::vector<std::vector<::SQLite::Column>> QueryAllColumns() noexcept;
 
 public:
   std::int32_t GetQueryBindingIndex(const std::string& name) const noexcept;
@@ -56,12 +61,6 @@ public:
 private:
   std::unique_ptr<Impl> impl_;
 };
-
-// TODO: Implement. Inherrit from base interface
-class SQLExpress {};
-
-// TODO: Implement. Inherrit from base interface
-class PostgreSQL {};
 
 }
 

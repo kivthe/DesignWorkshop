@@ -36,8 +36,9 @@ public:
   bool BindStatementValue(std::int32_t index, const std::string& value) noexcept;
   bool ClearStatementBindings() noexcept;
 
-  std::vector<Column> ExecuteQuerySingle() noexcept;
-  std::vector<std::vector<Column>> ExecuteQuery() noexcept;
+  std::vector<::SQLite::Column> QueryColumn(const std::string& col_name) noexcept;
+  std::vector<std::vector<::SQLite::Column>> QueryColumns(std::vector<std::string> cols_names) noexcept;
+  std::vector<std::vector<::SQLite::Column>> QueryAllColumns() noexcept;
 
 public:
   std::int32_t GetBindingIndex(const std::string& name) const noexcept;
@@ -321,19 +322,18 @@ std::int32_t SQLite::Impl::GetBindingIndex(const std::string& name) const noexce
 
 //================================================================================
 
-std::vector<SQLite::Column> SQLite::Impl::ExecuteQuerySingle() noexcept {
+std::vector<::SQLite::Column> SQLite::Impl::QueryColumn(const std::string& col_name) noexcept {
   if (database == nullptr || statement == nullptr) return {};
   try {
-    statement->executeStep();
-    std::vector<Column> cols;
+    std::vector<::SQLite::Column> cols;
     cols.reserve(statement->getColumnCount());
-    for (int i = 0 ; i < statement->getColumnCount(); ++i) {
-      Column col;
-      auto scol = statement->getColumn(i);
-      //statement->getColumnDeclaredType();
+    while (statement->executeStep()) {
+      ::SQLite::Column temp = statement->getColumn(col_name.c_str());
+      cols.push_back(temp);
     }
     return cols;
-  } catch (std::exception& except) {
+  }
+  catch (std::exception& except) {
     logger.Log(except.what(), LogLevel::Error);
     logger.LogToFile("logs.txt", except.what(), LogLevel::Error);
   }
@@ -342,8 +342,47 @@ std::vector<SQLite::Column> SQLite::Impl::ExecuteQuerySingle() noexcept {
 
 //================================================================================
 
-std::vector<std::vector<SQLite::Column>> SQLite::Impl::ExecuteQuery() noexcept {
+std::vector<std::vector<::SQLite::Column>> SQLite::Impl::QueryColumns(std::vector<std::string> cols_names) noexcept {
+  if (database == nullptr || statement == nullptr) return {};
+  try {
+    std::vector<std::vector<::SQLite::Column>> cols;
+    while (statement->executeStep()) {
+      cols.push_back({});
+      for(const auto& name : cols_names) {
+        cols.back().reserve(statement->getColumnCount());
+        ::SQLite::Column temp = statement->getColumn(name.c_str());
+        cols.back().push_back(temp);
+      }
+    }
+    return cols;
+  }
+  catch (std::exception& except) {
+    logger.Log(except.what(), LogLevel::Error);
+    logger.LogToFile("logs.txt", except.what(), LogLevel::Error);
+  }
+  return {};
+}
+//================================================================================
 
+std::vector<std::vector<::SQLite::Column>> SQLite::Impl::QueryAllColumns() noexcept {
+  if (database == nullptr || statement == nullptr) return {};
+  try {
+    std::vector<std::vector<::SQLite::Column>> cols;
+    while (statement->executeStep()) {
+      cols.push_back({});
+      cols.back().reserve(statement->getColumnCount());
+      for (int i = 0; i < statement->getColumnCount(); ++i) {
+        ::SQLite::Column temp = statement->getColumn(0);
+        cols.back().push_back(temp);
+      }
+    }
+    return cols;
+  }
+  catch (std::exception& except) {
+    logger.Log(except.what(), LogLevel::Error);
+    logger.LogToFile("logs.txt", except.what(), LogLevel::Error);
+  }
+  return {};
 }
 
 //================================================================================
@@ -490,14 +529,20 @@ std::int32_t SQLite::GetQueryBindingIndex(const std::string& name) const noexcep
 
 //================================================================================
 
-std::vector<SQLite::Column> SQLite::ExecuteQuerySingle() noexcept {
-  return impl_->ExecuteQuerySingle();
+std::vector<::SQLite::Column> SQLite::QueryColumn(const std::string& col_name) noexcept {
+  return impl_->QueryColumn(col_name);
 }
 
 //================================================================================
 
-std::vector<std::vector<SQLite::Column>> SQLite::ExecuteQuery() noexcept {
-  return impl_->ExecuteQuery();
+std::vector<std::vector<::SQLite::Column>> SQLite::QueryColumns(std::vector<std::string> cols_names) noexcept {
+  return impl_->QueryColumns(cols_names);
+}
+
+//================================================================================
+
+std::vector<std::vector<::SQLite::Column>> SQLite::QueryAllColumns() noexcept {
+  return impl_->QueryAllColumns();
 }
 
 //================================================================================
